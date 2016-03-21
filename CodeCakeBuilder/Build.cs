@@ -124,7 +124,7 @@ namespace CodeCake
 
                    var settings = new NuGetPushSettings
                    {
-                       Source = "https://www.nuget.org/api/v2/package",
+                       Source = "https://www.myget.org/feed/Packages/calculatricecake",
                        ApiKey = apiKey
                    };
 
