@@ -1,5 +1,4 @@
 version: 1.0.{build}
-version: build{build}
 branches:
   only:
   - master
@@ -8,5 +7,4 @@ branches:
 - ps: CodeCakeBuilder\Bootstrap.ps1
 build_script:
 - CodeCakeBuilder\bin\Release\CodeCakeBuilder.exe -nointeraction
-test: off
 test: off
