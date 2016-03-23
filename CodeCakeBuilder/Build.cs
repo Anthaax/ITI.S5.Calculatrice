@@ -1,16 +1,18 @@
 ﻿using Cake.Common;
 using Cake.Common.Solution;
 using Cake.Common.IO;
+using Cake.Common.Tools.NUnit;
 using Cake.Common.Tools.MSBuild;
 using Cake.Common.Tools.NuGet;
 using Cake.Core;
 using Cake.Common.Diagnostics;
+using Cake.Common.Text;
 using Cake.Common.Tools.NuGet.Pack;
+using System;
 using System.Linq;
 using Cake.Core.Diagnostics;
-using Cake.Common.Tools.NuGet.Restore;
-using System;
 using Cake.Common.Tools.NuGet.Push;
+using Cake.Core.IO;
 
 namespace CodeCake
 {
@@ -86,9 +88,22 @@ namespace CodeCake
                        }
                    }
                });
+            Task("Unit-Testing")
+                 .IsDependentOn("Build")
+                 .Does(() =>
+                 {
+                     Cake.NUnit("*.Tests/bin/" + configuration + "/*.Tests.dll", new NUnitSettings()
+                     {
+                         Framework = "v4.5",
+                         StopOnError = true
+                     }
+                     );
+
+                 });
 
             Task("Create-NuGet-Packages")
                 .IsDependentOn("Build")
+                .IsDependentOn("Unit-Testing")
                 .Does(() =>
                {
                    Cake.CreateDirectory(releasesDir);
@@ -119,13 +134,13 @@ namespace CodeCake
                     // AND CodeCakeBuilder is running in interactive mode (ie. no -nointeraction parameter),
                     // then the user is prompted to enter it.
                     // This is specific to CodeCake (in Code.Cake.dll).
-                    //var apiKey = Cake.InteractiveEnvironmentVariable("NUGET_API_KEY");
-                   //if (string.IsNullOrEmpty(apiKey)) throw new InvalidOperationException("Could not resolve NuGet API key.");
+                   var apiKey = Cake.InteractiveEnvironmentVariable("MYGET_API_KEY");
+                   if (string.IsNullOrEmpty(apiKey)) throw new InvalidOperationException("Could not resolve NuGet API key.");
 
                    var settings = new NuGetPushSettings
                    {
-                       Source = "https://www.myget.org/feed/Packages/calculatricecake",
-                      // ApiKey = apiKey
+                       Source = "https://www.myget.org/F/calculatricecake/api/v2/package",
+                       ApiKey = apiKey
                    };
 
                    foreach (var nupkg in Cake.GetFiles(releasesDir.Path + "/*.nupkg"))
